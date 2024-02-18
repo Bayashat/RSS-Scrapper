@@ -26,3 +26,26 @@ class RSSParser:
                 # ... other channel information
             ])
         return output
+
+    def parse_items(self) -> List[str]:
+        output = []
+        items = self.root.findall(".//item")
+        for item in items:
+            title = item.findtext('title')
+            author = item.findtext('author')
+            pub_date = item.findtext('pubDate')
+            link = item.findtext('link')
+            category = item.findtext('category')
+            description = item.findtext('description')
+            
+            # Format the output for each item
+            output.extend([
+                f"\nTitle: {title}",
+                f"Author: {author}",
+                f"Published: {pub_date}",
+                f"Link: {link}",
+                f"Category: {category}",
+                f"\n{description}"]
+            )
+                
+        return output
