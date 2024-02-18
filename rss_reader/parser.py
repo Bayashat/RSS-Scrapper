@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import json
 from typing import List, Optional
 
 
@@ -15,37 +16,51 @@ class RSSParser:
 
     def parse_channel(self) -> List[str]:
         output = []
-        channel = self.root.find("channel")
-        if channel:
-            title = channel.findtext('title')
-            link = channel.findtext('link')
-            # ... other channel information extraction
-            output.extend([
-                f"Feed: {title}",
-                f"Link: {link}",
+        self.channel = self.root.find("channel")
+        if self.channel:
+            return {
+                "Feed": self.channel.findtext('title'),
+                "Link": self.channel.findtext('link'),
                 # ... other channel information
-            ])
-        return output
+            }
 
     def parse_items(self) -> List[str]:
         output = []
-        items = self.root.findall(".//item")
-        for item in items:
+        self.items = self.root.findall(".//item")
+        for item in self.items:
             title = item.findtext('title')
             author = item.findtext('author')
             pub_date = item.findtext('pubDate')
             link = item.findtext('link')
             category = item.findtext('category')
             description = item.findtext('description')
-            
-            # Format the output for each item
-            output.extend([
-                f"\nTitle: {title}",
-                f"Author: {author}",
-                f"Published: {pub_date}",
-                f"Link: {link}",
-                f"Category: {category}",
-                f"\n{description}"]
-            )
+
+            output.append({
+                "Title": title,
+                "Author": author,
+                "Published": pub_date,
+                "Link": link,
+                "Category": category,
+                "Description": description
+            })
                 
         return output
+    
+    def to_json(self) -> str:
+        channel_data = self.parse_channel()
+        items_data = self.parse_items()
+        
+        data = {
+            "Feed": channel_data["Feed"],
+            "Link": channel_data["Link"],
+            # Other channel information
+            
+            "Title": items_data["Title"],
+            "Author": items_data["Author"],
+            "Published": items_data["Published"],
+            "Link": items_data["Link"],
+            "Category": items_data["Category"],
+            "Description": items_data["Description"]
+        }
+        
+        return json.dumps(data, indent=2)
