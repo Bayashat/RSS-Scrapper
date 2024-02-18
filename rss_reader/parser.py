@@ -18,12 +18,22 @@ class RSSParser:
         output = []
         self.channel = self.root.find("channel")
         if self.channel:
-            return {
+            channel_dict = {
                 "Feed": self.channel.findtext('title'),
                 "Link": self.channel.findtext('link'),
+                "Last Build Date": self.channel.findtext('lastBuildDate'),
+                "Publish Date": self.channel.findtext('pubDate'),
+                "Language": self.channel.findtext('language'),
+                "Categories": self.channel.findtext('category'),
+                "Editor": self.channel.findtext('managinEditor'),
                 "Description": self.channel.findtext('description'),
-                # ... other channel information
+                # "Items": self.channel.findtext('item')
             }
+            
+            # Filter out items with a value of None
+            channel_dict = {key: value for key, value in channel_dict.items() if value is not None}
+            
+            return channel_dict
 
     def parse_items_stout(self, limit: int) -> List[str]:
         output = []
