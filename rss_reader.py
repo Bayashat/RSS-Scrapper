@@ -26,15 +26,18 @@ def main(argv: Optional[Sequence] = None):
     try:
         rss_parser = RSSParser(xml)
         if args.json:
-            print(rss_parser.to_json())
+            print(rss_parser.to_json(args.limit))
         else:
-            output = dict(rss_parser.parse_channel(), **{"items": rss_parser.parse_items()})
+            output = dict(rss_parser.parse_channel(), **{"items": rss_parser.parse_items_stout(args.limit)})
             
             for key, value in output.items():
                 if key == "items":
                     print()
                     for item in value:
                         for k,v in item.items():
+                            if k == "Description":
+                                print("\n" + v)
+                                continue
                             print(f"{k}: {v}")
                         print()
                 else:

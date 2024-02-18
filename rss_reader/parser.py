@@ -21,46 +21,68 @@ class RSSParser:
             return {
                 "Feed": self.channel.findtext('title'),
                 "Link": self.channel.findtext('link'),
+                "Description": self.channel.findtext('description'),
                 # ... other channel information
             }
 
-    def parse_items(self) -> List[str]:
+    def parse_items_stout(self, limit: int) -> List[str]:
         output = []
         self.items = self.root.findall(".//item")
+        self.limit = limit
+        # Limit news topics if this parameter provided
+        if limit:
+            self.items = self.items[:limit]
+  
         for item in self.items:
-            title = item.findtext('title')
-            author = item.findtext('author')
-            pub_date = item.findtext('pubDate')
-            link = item.findtext('link')
-            category = item.findtext('category')
-            description = item.findtext('description')
+            item_dict = {
+                "Title": item.findtext('title'),
+                "Author": item.findtext('author'),
+                "Published": item.findtext('pubDate'),
+                "Link": item.findtext('link'),
+                "Category": item.findtext('category'),
+                "Description": item.findtext('description')
+            }
 
-            output.append({
-                "Title": title,
-                "Author": author,
-                "Published": pub_date,
-                "Link": link,
-                "Category": category,
-                "Description": description
-            })
+            # Filter out items with a value of None
+            item_dict = {key: value for key, value in item_dict.items() if value is not None}   
+            
+            output.append(item_dict)
                 
         return output
     
-    def to_json(self) -> str:
-        channel_data = self.parse_channel()
-        items_data = self.parse_items()
+    def parse_items_json(self, limit: int) -> List[str]:
+        output = []
+        self.items = self.root.findall(".//item")
+        self.limit = limit
+        # Limit news topics if this parameter provided
+        if limit:
+            self.items = self.items[:limit]
+  
+        for item in self.items:
+            item_dict = {
+                "title": item.findtext('title'),
+                "author": item.findtext('author'),
+                "pubDate": item.findtext('pubDate'),
+                "link": item.findtext('link'),
+                "category": item.findtext('category'),
+                "description": item.findtext('description')
+            }
+            
+            # Filter out items with a value of None
+            item_dict = {key: value for key, value in item_dict.items() if value is not None}
+            output.append(item_dict)
+                
+        return output
+    
+    def to_json(self, limit: int) -> str:
+        channel_data: Optional[dict] = self.parse_channel()
+        items_data: List[dict] = self.parse_items_json(limit)
         
         data = {
-            "Feed": channel_data["Feed"],
-            "Link": channel_data["Link"],
-            # Other channel information
-            
-            "Title": items_data["Title"],
-            "Author": items_data["Author"],
-            "Published": items_data["Published"],
-            "Link": items_data["Link"],
-            "Category": items_data["Category"],
-            "Description": items_data["Description"]
+            "title": channel_data.get("Feed"),
+            "link": channel_data.get("Link"),
+            "description": channel_data.get("Description"),
+            "items": items_data
         }
-        
         return json.dumps(data, indent=2)
+    
