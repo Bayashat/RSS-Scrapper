@@ -8,9 +8,6 @@ from parser import UnhandledException, rss_parser
 
 
 def main(argv: Optional[Sequence] = None):
-    """
-    The main function of your task.
-    """
     parser = ArgumentParser(
         prog="rss_reader",
         description="Pure Python command-line RSS reader.",
